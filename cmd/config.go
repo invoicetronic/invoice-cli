@@ -28,6 +28,7 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		list, _ := cmd.Flags().GetBool("list")
 		if list {
+			fmt.Println("Using " + viper.ConfigFileUsed())
 			for key, value := range viper.AllSettings() {
 				fmt.Printf("%s: %v\n", key, value)
 			}

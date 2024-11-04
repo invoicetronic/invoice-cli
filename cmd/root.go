@@ -48,7 +48,8 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.invoice.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", "", "config file (default is $HOME/.inv.yaml)")
+	// viper.BindPFlag("config_file", rootCmd.PersistentFlags().Lookup("config_file"))
 
 	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "Your API key")
 	viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
@@ -73,22 +74,17 @@ func initConfig() {
 	viper.SetDefault("apikey", "")
 
 	if cfgFile != "" {
-		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".inv")
 		viper.AddConfigPath(home)
-		viper.SetEnvPrefix("inv")
 
 		viper.SafeWriteConfigAs(filepath.Join(home, ".inv.yaml"))
 	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
+	viper.SetEnvPrefix("inv")
+	viper.AutomaticEnv()
 	viper.ReadInConfig()
 }
