@@ -4,6 +4,7 @@ Copyright © 2024 Nicola Iarocci & CIR 2000
 package cmd
 
 import (
+	"encoding/base64"
 	"os"
 	"path/filepath"
 
@@ -41,6 +42,11 @@ func Execute() {
 	}
 }
 
+func MyBasicAuth() string {
+	auth := viper.GetString("apikey") + ":" + ""
+	return base64.StdEncoding.EncodeToString([]byte(auth))
+}
+
 func init() {
 
 	cobra.OnInitialize(initConfig)
@@ -49,7 +55,6 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", "", "config file (default is $HOME/.inv.yaml)")
-	// viper.BindPFlag("config_file", rootCmd.PersistentFlags().Lookup("config_file"))
 
 	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "Your API key")
 	viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))

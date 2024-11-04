@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// sendCmd represents the send command
 var sendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "Send one or more invoices",
@@ -38,7 +37,7 @@ func sendRun(cmd *cobra.Command, args []string) {
 	send(cmd, items)
 }
 
-func send(cmd *cobra.Command, items []models.Item) {
+func send(cmd *cobra.Command, items []models.SendItem) {
 	client := &http.Client{}
 	for _, item := range items {
 		json, _ := json.Marshal(item)
@@ -53,7 +52,7 @@ func send(cmd *cobra.Command, items []models.Item) {
 			log.Fatalf("Error creating a send request: %v", err)
 		}
 
-		req.Header.Set("Authorization", "Basic "+basicAuth())
+		req.Header.Set("Authorization", "Basic "+MyBasicAuth())
 		req.Header.Set("Content-Type", "application/json")
 
 		if verbose {
@@ -71,7 +70,7 @@ func send(cmd *cobra.Command, items []models.Item) {
 		}
 
 		if !(isSuccessStatusCode(resp.StatusCode)) {
-			log.Printf("Send request failed (%v)", resp.Status)
+			log.Printf("Send failed (%v)", resp.Status)
 			if len(respBody) > 0 {
 				log.Println(string(respBody))
 			}
@@ -99,14 +98,9 @@ func isSuccessStatusCode(statusCode int) bool {
 	return statusCode >= 200 && statusCode < 300
 }
 
-func basicAuth() string {
-	auth := viper.GetString("apikey") + ":" + ""
-	return base64.StdEncoding.EncodeToString([]byte(auth))
-}
+func build(args []string) []models.SendItem {
 
-func build(args []string) []models.Item {
-
-	items := []models.Item{}
+	items := []models.SendItem{}
 	for _, arg := range args {
 		files, err := filepath.Glob(arg)
 		if err != nil {
@@ -118,7 +112,7 @@ func build(args []string) []models.Item {
 			if err != nil {
 				log.Fatal(err)
 			}
-			item := models.Item{FilePath: file, File_Name: filepath.Base(file), Payload: base64.StdEncoding.EncodeToString(content)}
+			item := models.SendItem{FilePath: file, File_Name: filepath.Base(file), Payload: base64.StdEncoding.EncodeToString(content)}
 			if verbose {
 				log.Printf("%v selected and encoded (base64)", item.File_Name)
 			}
