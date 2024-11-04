@@ -6,6 +6,7 @@ package cmd
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -20,7 +21,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// var as_json bool
+var as_json bool
 var outdir string
 
 var receiveCmd = &cobra.Command{
@@ -74,6 +75,15 @@ func receiveRun(cmd *cobra.Command, args []string) {
 	var response models.Response
 	if err := json.Unmarshal(respBody, &response); err != nil {
 		log.Fatal(err)
+	}
+
+	if as_json {
+		jsonData, err := json.Marshal(response.Items)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(string(jsonData))
 	}
 
 	for _, item := range response.Items {
@@ -150,6 +160,6 @@ func createDirectoryIfNotExists(dest string) error {
 func init() {
 	rootCmd.AddCommand(receiveCmd)
 
-	// receiveCmd.Flags().BoolVar(&as_json, "json", false, "Response as json")
+	receiveCmd.Flags().BoolVar(&as_json, "json", false, "Response as json")
 	receiveCmd.Flags().StringVarP(&outdir, "dest", "d", "", "Destination directory")
 }
