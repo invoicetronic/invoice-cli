@@ -33,7 +33,7 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: receiveRun,
+	Run: getRun,
 }
 
 func receiveRun(cmd *cobra.Command, args []string) {
@@ -87,11 +87,11 @@ func receiveRun(cmd *cobra.Command, args []string) {
 	}
 
 	for _, item := range response.Items {
-		tofile(item.File_Name, item.Payload)
+		ToFile(item.File_Name, item.Payload)
 	}
 
 }
-func tofile(filename string, payload string) {
+func ToFile(filename string, payload string) {
 	if verbose {
 		log.Printf("Decoding payload for %v\n", filename)
 	}
