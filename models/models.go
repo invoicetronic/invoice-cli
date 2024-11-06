@@ -7,6 +7,7 @@ type SendItem struct {
 }
 
 type ReceiveItem struct {
+	Id        int
 	Payload   string `json:"payload"`
 	File_Name string `json:"file_name"`
 }

@@ -5,6 +5,9 @@ package cmd
 
 import (
 	"encoding/base64"
+	"io"
+	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -42,9 +45,35 @@ func Execute() {
 	}
 }
 
-func MyBasicAuth() string {
+func BasicAuth() string {
 	auth := viper.GetString("apikey") + ":" + ""
 	return base64.StdEncoding.EncodeToString([]byte(auth))
+}
+
+func PerformRequest(req *http.Request, client *http.Client) (*http.Response, []byte) {
+	req.Header.Set("Authorization", "Basic "+BasicAuth())
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		log.Printf("Send failed (%v)", resp.Status)
+		if len(respBody) > 0 {
+			log.Println(string(respBody))
+		}
+		os.Exit(1)
+	}
+
+	return resp, respBody
 }
 
 func init() {
@@ -68,6 +97,63 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "display more verbose outut in console output")
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 
+}
+
+func ToFile(filename string, payload string) {
+	if verbose {
+		log.Printf("Decoding payload for %v\n", filename)
+	}
+	decodedData, err := base64.StdEncoding.DecodeString(payload)
+	if err != nil {
+		log.Fatalf("Error decoding "+filename+": %v", err)
+	}
+
+	var filePath string
+	if outdir != "" {
+		filePath, err = getFullFilePath(outdir, filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = createDirectoryIfNotExists(outdir)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		filePath = filename
+	}
+
+	if verbose {
+		log.Printf("Creating file %v\n", filename)
+	}
+	file, err := os.Create(filePath)
+	if err != nil {
+		log.Fatalf("Error creating "+filename+": %v", err)
+	}
+	defer file.Close()
+
+	if verbose {
+		log.Printf("Writing to file %v\n", filename)
+	}
+	_, err = file.Write(decodedData)
+	if err != nil {
+		log.Fatalf("Error writing to file "+filename+": %v", err)
+	}
+
+	if verbose {
+		log.Printf("Write to %v succeded\n", filename)
+	}
+}
+
+func createDirectoryIfNotExists(dest string) error {
+	// Creare la directory se non esiste
+	if _, err := os.Stat(dest); os.IsNotExist(err) {
+		err = os.MkdirAll(dest, 0755)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // initConfig reads in config file and ENV variables if set.

@@ -4,10 +4,9 @@ Copyright © 2024 Nicola Iarocci & CIR 2000
 package cmd
 
 import (
-	"encoding/base64"
+	"bufio"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -24,6 +23,8 @@ import (
 var as_json bool
 var unread bool
 var outdir string
+var remote_delete bool
+var assume_yes bool
 
 var receiveCmd = &cobra.Command{
 	Use:   "receive",
@@ -48,34 +49,10 @@ func receiveRun(cmd *cobra.Command, args []string) {
 	fullURL := baseURL.ResolveReference(relativePath).String()
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
-		log.Fatalf("Error creating a receive request: %v", err)
-	}
-
-	req.Header.Set("Authorization", "Basic "+MyBasicAuth())
-	req.Header.Set("Accept", "application/json")
-
-	if verbose {
-		log.Println("Requesting items...")
-	}
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
 		log.Fatal(err)
 	}
 
-	if !(isSuccessStatusCode(resp.StatusCode)) {
-		log.Printf("Receive failed (%v)", resp.Status)
-		if len(respBody) > 0 {
-			log.Println(string(respBody))
-		}
-		os.Exit(1)
-	}
+	_, respBody := PerformRequest(req, &http.Client{})
 
 	var response models.Response
 	if err := json.Unmarshal(respBody, &response); err != nil {
@@ -89,57 +66,41 @@ func receiveRun(cmd *cobra.Command, args []string) {
 		}
 
 		fmt.Println(string(jsonData))
+	} else {
+		for _, item := range response.Items {
+			ToFile(item.File_Name, item.Payload)
+		}
 	}
+	if remote_delete && len(response.Items) > 0 {
+		if !assume_yes {
+			reader := bufio.NewReader(os.Stdin)
 
-	for _, item := range response.Items {
-		ToFile(item.File_Name, item.Payload)
+			fmt.Printf("Are you sure you want to remotely delete the documents? (y/N): ")
+			input, _ := reader.ReadString('\n')
+			input = strings.TrimSpace(input)
+
+			if strings.ToLower(input) == "n" || input == "" {
+				fmt.Println("Remote delete canceleted.")
+				return
+			}
+		}
+		for _, item := range response.Items {
+			remoteDelete(item.Id)
+		}
 	}
 
 }
-func ToFile(filename string, payload string) {
-	if verbose {
-		log.Printf("Decoding payload for %v\n", filename)
-	}
-	decodedData, err := base64.StdEncoding.DecodeString(payload)
+func remoteDelete(id int) {
+	baseURL, _ := url.Parse(viper.GetString("host") + "v" + strconv.Itoa(viper.GetInt("version")) + "/")
+	relativePath, _ := url.Parse("receive/" + strconv.Itoa(id))
+	fullURL := baseURL.ResolveReference(relativePath).String()
+	fmt.Println(fullURL)
+	req, err := http.NewRequest("DELETE", fullURL, nil)
 	if err != nil {
-		log.Fatalf("Error decoding "+filename+": %v", err)
+		log.Fatal(err)
 	}
 
-	var filePath string
-	if outdir != "" {
-		filePath, err = getFullFilePath(outdir, filename)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = createDirectoryIfNotExists(outdir)
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		filePath = filename
-	}
-
-	if verbose {
-		log.Printf("Creating file %v\n", filename)
-	}
-	file, err := os.Create(filePath)
-	if err != nil {
-		log.Fatalf("Error creating "+filename+": %v", err)
-	}
-	defer file.Close()
-
-	if verbose {
-		log.Printf("Writing to file %v\n", filename)
-	}
-	_, err = file.Write(decodedData)
-	if err != nil {
-		log.Fatalf("Error writing to file "+filename+": %v", err)
-	}
-
-	if verbose {
-		log.Printf("Write to %v succeded\n", filename)
-	}
+	PerformRequest(req, &http.Client{})
 }
 
 func getFullFilePath(dest, filename string) (string, error) {
@@ -152,20 +113,12 @@ func getFullFilePath(dest, filename string) (string, error) {
 	return filepath.Join(dest, filename), nil
 }
 
-func createDirectoryIfNotExists(dest string) error {
-	// Creare la directory se non esiste
-	if _, err := os.Stat(dest); os.IsNotExist(err) {
-		err = os.MkdirAll(dest, 0755)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
 func init() {
 	rootCmd.AddCommand(receiveCmd)
 
-	receiveCmd.Flags().BoolVar(&as_json, "json", false, "response as json")
+	receiveCmd.Flags().BoolVar(&as_json, "json", false, "response as json, no file will be saved")
+	receiveCmd.Flags().BoolVarP(&assume_yes, "yes", "y", false, "assume yes on all answers")
 	receiveCmd.Flags().BoolVar(&unread, "unread", false, "fetch unread documents only")
+	receiveCmd.Flags().BoolVar(&remote_delete, "delete", false, "once the file has been downloaded, delete it from remote")
 	receiveCmd.Flags().StringVarP(&outdir, "dest", "d", "", "destination directory")
 }

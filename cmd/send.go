@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -39,48 +38,27 @@ func sendRun(cmd *cobra.Command, args []string) {
 
 func send(cmd *cobra.Command, items []models.SendItem) {
 	client := &http.Client{}
+	baseURL, _ := url.Parse(viper.GetString("host") + "v" + strconv.Itoa(viper.GetInt("version")) + "/")
+	validate, _ := cmd.Flags().GetBool("validate")
+	sendPart := "send"
+	validatePart := ""
+	if validate {
+		validatePart = "/?validate=true"
+	}
+	relativePath, _ := url.Parse(sendPart + validatePart)
+	fullURL := baseURL.ResolveReference(relativePath).String()
+
 	for _, item := range items {
 		json, _ := json.Marshal(item)
 		jsonBytes := []byte(json)
 
-		baseURL, _ := url.Parse(viper.GetString("host") + "v" + strconv.Itoa(viper.GetInt("version")) + "/")
-		validate, _ := cmd.Flags().GetBool("validate")
-		sendPart := "send"
-		validatePart := ""
-		if validate {
-			validatePart = "/?validate=true"
-		}
-		relativePath, _ := url.Parse(sendPart + validatePart)
-		fullURL := baseURL.ResolveReference(relativePath).String()
 		req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonBytes))
 		if err != nil {
-			log.Fatalf("Error creating a send request: %v", err)
-		}
-
-		req.Header.Set("Authorization", "Basic "+MyBasicAuth())
-		req.Header.Set("Content-Type", "application/json")
-
-		if verbose {
-			log.Printf("%v is being sent to the remote", item.File_Name)
-		}
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer resp.Body.Close()
-
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
 			log.Fatal(err)
 		}
 
-		if !(isSuccessStatusCode(resp.StatusCode)) {
-			log.Printf("Send failed (%v)", resp.Status)
-			if len(respBody) > 0 {
-				log.Println(string(respBody))
-			}
-			os.Exit(1)
-		}
+		resp, _ := PerformRequest(req, client)
+
 		if verbose {
 			log.Printf("%v sent successfully (%v)", item.File_Name, resp.Status)
 		}
@@ -97,10 +75,6 @@ func send(cmd *cobra.Command, items []models.SendItem) {
 		}
 	}
 
-}
-
-func isSuccessStatusCode(statusCode int) bool {
-	return statusCode >= 200 && statusCode < 300
 }
 
 func build(args []string) []models.SendItem {

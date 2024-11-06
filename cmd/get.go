@@ -6,11 +6,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 
 	"github.com/CIR2000/inv/models"
@@ -39,34 +37,10 @@ func getRun(cmd *cobra.Command, args []string) {
 
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
-		log.Fatalf("Error creating a receive request: %v", err)
-	}
-
-	req.Header.Set("Authorization", "Basic "+MyBasicAuth())
-	req.Header.Set("Accept", "application/json")
-
-	if verbose {
-		log.Printf("Requesting item #%v\n", id)
-	}
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
 		log.Fatal(err)
 	}
 
-	if !(isSuccessStatusCode(resp.StatusCode)) {
-		log.Printf("Get failed (%v)", resp.Status)
-		if len(respBody) > 0 {
-			log.Println(string(respBody))
-		}
-		os.Exit(1)
-	}
+	_, respBody := PerformRequest(req, &http.Client{})
 
 	var response models.ReceiveItem
 	if err := json.Unmarshal(respBody, &response); err != nil {
