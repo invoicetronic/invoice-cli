@@ -56,7 +56,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", "", "config file (default is $HOME/.inv.yaml)")
 
-	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "Your API key")
+	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "your API key")
 	viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
 
 	rootCmd.PersistentFlags().StringVar(&host, "host", default_host, "API base address")
@@ -65,7 +65,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&version, "version", 1, "API version")
 	viper.BindPFlag("version", rootCmd.PersistentFlags().Lookup("version"))
 
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Display more verbose outut in console output")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "display more verbose outut in console output")
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 
 }

@@ -160,6 +160,6 @@ func createDirectoryIfNotExists(dest string) error {
 func init() {
 	rootCmd.AddCommand(receiveCmd)
 
-	receiveCmd.Flags().BoolVar(&as_json, "json", false, "Response as json")
-	receiveCmd.Flags().StringVarP(&outdir, "dest", "d", "", "Destination directory")
+	receiveCmd.Flags().BoolVar(&as_json, "json", false, "response as json")
+	receiveCmd.Flags().StringVarP(&outdir, "dest", "d", "", "destination directory")
 }

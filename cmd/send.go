@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -44,9 +45,15 @@ func send(cmd *cobra.Command, items []models.SendItem) {
 		jsonBytes := []byte(json)
 
 		baseURL, _ := url.Parse(viper.GetString("host") + "v" + strconv.Itoa(viper.GetInt("version")) + "/")
-		relativePath, _ := url.Parse("send")
+		validate, _ := cmd.Flags().GetBool("validate")
+		sendPart := "send"
+		validatePart := ""
+		if validate {
+			validatePart = "/?validate=true"
+		}
+		relativePath, _ := url.Parse(sendPart + validatePart)
 		fullURL := baseURL.ResolveReference(relativePath).String()
-
+		fmt.Println(fullURL)
 		req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonBytes))
 		if err != nil {
 			log.Fatalf("Error creating a send request: %v", err)
@@ -125,5 +132,6 @@ func build(args []string) []models.SendItem {
 func init() {
 	rootCmd.AddCommand(sendCmd)
 
-	sendCmd.Flags().Bool("delete", false, "Delete the file once it has been successfully sent")
+	sendCmd.Flags().Bool("delete", false, "once the file has been sent, delete it from disk")
+	sendCmd.Flags().Bool("validate", false, "validate first, and reject it the document is invalid")
 }

@@ -89,6 +89,6 @@ func getRun(cmd *cobra.Command, args []string) {
 func init() {
 	rootCmd.AddCommand(getCmd)
 
-	getCmd.Flags().BoolVar(&as_json, "json", false, "Response as json")
-	getCmd.Flags().StringVarP(&outdir, "dest", "d", "", "Destination directory")
+	getCmd.Flags().BoolVar(&as_json, "json", false, "response as json")
+	getCmd.Flags().StringVarP(&outdir, "dest", "d", "", "destination directory")
 }
