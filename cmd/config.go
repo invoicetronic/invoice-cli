@@ -53,9 +53,7 @@ var apikeyCmd = &cobra.Command{
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		if verbose {
-			fmt.Printf("API key set to: %s\n", value)
-		}
+		ToVerbose("API key set to: %s\n", value)
 	},
 }
 var hostCmd = &cobra.Command{
@@ -68,9 +66,7 @@ var hostCmd = &cobra.Command{
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		if verbose {
-			fmt.Printf("host set to: %s\n", value)
-		}
+		ToVerbose("host set to: %s\n", value)
 	},
 }
 
@@ -87,9 +83,7 @@ var verboseCmd = &cobra.Command{
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		if verbose {
-			fmt.Printf("verbose set to: %v", value)
-		}
+		ToVerbose("verbose set to: %v", value)
 	},
 }
 var versionCmd = &cobra.Command{
@@ -105,9 +99,7 @@ var versionCmd = &cobra.Command{
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		if verbose {
-			fmt.Printf("verbose set to: %v", value)
-		}
+		ToVerbose("verbose set to: %v", value)
 	},
 }
 

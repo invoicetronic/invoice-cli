@@ -100,9 +100,7 @@ func init() {
 }
 
 func ToFile(filename string, payload string) {
-	if verbose {
-		log.Printf("Decoding payload for %v\n", filename)
-	}
+	ToVerbose("Decoding payload for %v\n", filename)
 	decodedData, err := base64.StdEncoding.DecodeString(payload)
 	if err != nil {
 		log.Fatalf("Error decoding "+filename+": %v", err)
@@ -123,30 +121,23 @@ func ToFile(filename string, payload string) {
 		filePath = filename
 	}
 
-	if verbose {
-		log.Printf("Creating file %v\n", filename)
-	}
+	ToVerbose("Creating file %v\n", filename)
 	file, err := os.Create(filePath)
 	if err != nil {
 		log.Fatalf("Error creating "+filename+": %v", err)
 	}
 	defer file.Close()
 
-	if verbose {
-		log.Printf("Writing to file %v\n", filename)
-	}
+	ToVerbose("Writing to file %v\n", filename)
 	_, err = file.Write(decodedData)
 	if err != nil {
 		log.Fatalf("Error writing to file "+filename+": %v", err)
 	}
 
-	if verbose {
-		log.Printf("Write to %v succeded\n", filename)
-	}
+	ToVerbose("Write to %v succeded\n", filename)
 }
 
 func createDirectoryIfNotExists(dest string) error {
-	// Creare la directory se non esiste
 	if _, err := os.Stat(dest); os.IsNotExist(err) {
 		err = os.MkdirAll(dest, 0755)
 		if err != nil {
@@ -154,6 +145,13 @@ func createDirectoryIfNotExists(dest string) error {
 		}
 	}
 	return nil
+}
+
+func ToVerbose(format string, v ...any) {
+	if !verbose {
+		return
+	}
+	log.Printf(format, v...)
 }
 
 // initConfig reads in config file and ENV variables if set.

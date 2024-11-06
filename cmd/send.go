@@ -31,7 +31,7 @@ invoice send dir/*.xml --delete`,
 }
 
 func sendRun(cmd *cobra.Command, args []string) {
-	verbose = viper.GetBool("verbose")
+	// verbose = viper.GetBool("verbose")
 	items := build(args)
 	send(cmd, items)
 }
@@ -59,18 +59,14 @@ func send(cmd *cobra.Command, items []models.SendItem) {
 
 		resp, _ := PerformRequest(req, client)
 
-		if verbose {
-			log.Printf("%v sent successfully (%v)", item.File_Name, resp.Status)
-		}
+		ToVerbose("%v sent successfully (%v)", item.File_Name, resp.Status)
 		delete, _ := cmd.Flags().GetBool("delete")
 		if delete {
 			err := os.Remove(item.FilePath)
 			if err != nil {
 				log.Fatalf("Error deleting %v: %v", item.File_Name, err)
 			}
-			if verbose {
-				log.Printf("%v deleted (--delete)", item.File_Name)
-			}
+			ToVerbose("%v deleted (--delete)", item.File_Name)
 
 		}
 	}
@@ -92,9 +88,7 @@ func build(args []string) []models.SendItem {
 				log.Fatal(err)
 			}
 			item := models.SendItem{FilePath: file, File_Name: filepath.Base(file), Payload: base64.StdEncoding.EncodeToString(content)}
-			if verbose {
-				log.Printf("%v selected and encoded (base64)", item.File_Name)
-			}
+			ToVerbose("%v selected and encoded (base64)", item.File_Name)
 			items = append(items, item)
 		}
 	}
