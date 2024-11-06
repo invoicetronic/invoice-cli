@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -53,7 +52,6 @@ func send(cmd *cobra.Command, items []models.SendItem) {
 		}
 		relativePath, _ := url.Parse(sendPart + validatePart)
 		fullURL := baseURL.ResolveReference(relativePath).String()
-		fmt.Println(fullURL)
 		req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonBytes))
 		if err != nil {
 			log.Fatalf("Error creating a send request: %v", err)

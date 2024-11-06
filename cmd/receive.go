@@ -22,6 +22,7 @@ import (
 )
 
 var as_json bool
+var unread bool
 var outdir string
 
 var receiveCmd = &cobra.Command{
@@ -38,9 +39,13 @@ to quickly create a Cobra application.`,
 
 func receiveRun(cmd *cobra.Command, args []string) {
 	baseURL, _ := url.Parse(viper.GetString("host") + "v" + strconv.Itoa(viper.GetInt("version")) + "/")
-	relativePath, _ := url.Parse("receive")
+	receivePart := "receive"
+	unreadPart := ""
+	if unread {
+		unreadPart = "/?unread=true"
+	}
+	relativePath, _ := url.Parse(receivePart + unreadPart)
 	fullURL := baseURL.ResolveReference(relativePath).String()
-
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
 		log.Fatalf("Error creating a receive request: %v", err)
@@ -161,5 +166,6 @@ func init() {
 	rootCmd.AddCommand(receiveCmd)
 
 	receiveCmd.Flags().BoolVar(&as_json, "json", false, "response as json")
+	receiveCmd.Flags().BoolVar(&unread, "unread", false, "fetch unread documents only")
 	receiveCmd.Flags().StringVarP(&outdir, "dest", "d", "", "destination directory")
 }
