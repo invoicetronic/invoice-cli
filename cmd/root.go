@@ -8,8 +8,11 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
+	"strconv"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -18,13 +21,12 @@ import (
 var cfgFile string
 var apiKey string
 var host string
-var version int
 var verbose bool
 
-const product_name string = "Fatture API"
-const default_host string = "https://localhost:7019/api/"
+const product_name string = "Invoicetronic Italian Invoice API"
+const default_host string = "https://api.invoicetronic.com"
+const api_version int = 1
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "inv",
 	Short: "Send and receive invoices via " + product_name,
@@ -79,28 +81,22 @@ func PerformRequest(req *http.Request, client *http.Client) (*http.Response, []b
 func init() {
 
 	cobra.OnInitialize(initConfig)
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", "", "config file (default is $HOME/.inv.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", "", "config file, default is $HOME/.inv.yaml")
 
-	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "your API key")
+	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "your API key for"+product_name)
 	viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
 
-	rootCmd.PersistentFlags().StringVar(&host, "host", default_host, "API base address")
+	rootCmd.PersistentFlags().StringVar(&host, "host", default_host, "API base address, defaults to "+default_host)
 	viper.BindPFlag("host", rootCmd.PersistentFlags().Lookup("host"))
 
-	rootCmd.PersistentFlags().IntVar(&version, "version", 1, "API version")
-	viper.BindPFlag("version", rootCmd.PersistentFlags().Lookup("version"))
-
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "display more verbose outut in console output")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "display a more verbose outut")
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 
 }
 
 func ToFile(filename string, payload string) {
-	ToVerbose("Decoding payload for %v\n", filename)
+	toVerbose("Decoding payload for %v\n", filename)
 	decodedData, err := base64.StdEncoding.DecodeString(payload)
 	if err != nil {
 		log.Fatalf("Error decoding "+filename+": %v", err)
@@ -121,20 +117,20 @@ func ToFile(filename string, payload string) {
 		filePath = filename
 	}
 
-	ToVerbose("Creating file %v\n", filename)
+	toVerbose("Creating file %v\n", filename)
 	file, err := os.Create(filePath)
 	if err != nil {
 		log.Fatalf("Error creating "+filename+": %v", err)
 	}
 	defer file.Close()
 
-	ToVerbose("Writing to file %v\n", filename)
+	toVerbose("Writing to file %v\n", filename)
 	_, err = file.Write(decodedData)
 	if err != nil {
 		log.Fatalf("Error writing to file "+filename+": %v", err)
 	}
 
-	ToVerbose("Write to %v succeded\n", filename)
+	toVerbose("Write to %v succeded\n", filename)
 }
 
 func createDirectoryIfNotExists(dest string) error {
@@ -147,18 +143,22 @@ func createDirectoryIfNotExists(dest string) error {
 	return nil
 }
 
-func ToVerbose(format string, v ...any) {
+func toVerbose(format string, v ...any) {
 	if !verbose {
 		return
 	}
 	log.Printf(format, v...)
 }
 
-// initConfig reads in config file and ENV variables if set.
+func BuildUrl(relativePath string) string {
+	base, _ := url.Parse(viper.GetString("host"))
+	base.Path = path.Join(base.Path, "/invoice/v"+strconv.Itoa(api_version), relativePath)
+	return base.String()
+}
+
 func initConfig() {
 
 	viper.SetDefault("host", default_host)
-	viper.SetDefault("version", 1)
 	viper.SetDefault("verbose", false)
 	viper.SetDefault("apikey", "")
 

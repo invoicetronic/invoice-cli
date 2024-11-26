@@ -8,12 +8,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
-	"strconv"
 
 	"github.com/CIR2000/inv/models"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var getCmd = &cobra.Command{
@@ -31,10 +28,8 @@ to quickly create a Cobra application.`,
 
 func getRun(cmd *cobra.Command, args []string) {
 	id := args[0]
-	baseURL, _ := url.Parse(viper.GetString("host") + "v" + strconv.Itoa(viper.GetInt("version")) + "/")
-	relativePath, _ := url.Parse("receive" + "/" + id)
-	fullURL := baseURL.ResolveReference(relativePath).String()
-
+	relativePath := "receive" + "/" + id
+	fullURL := BuildUrl(relativePath)
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
 		log.Fatal(err)

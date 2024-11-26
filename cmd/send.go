@@ -9,14 +9,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/CIR2000/inv/models"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var sendCmd = &cobra.Command{
@@ -31,22 +28,20 @@ invoice send dir/*.xml --delete`,
 }
 
 func sendRun(cmd *cobra.Command, args []string) {
-	// verbose = viper.GetBool("verbose")
 	items := build(args)
 	send(cmd, items)
 }
 
 func send(cmd *cobra.Command, items []models.SendItem) {
 	client := &http.Client{}
-	baseURL, _ := url.Parse(viper.GetString("host") + "v" + strconv.Itoa(viper.GetInt("version")) + "/")
 	validate, _ := cmd.Flags().GetBool("validate")
 	sendPart := "send"
 	validatePart := ""
 	if validate {
 		validatePart = "/?validate=true"
 	}
-	relativePath, _ := url.Parse(sendPart + validatePart)
-	fullURL := baseURL.ResolveReference(relativePath).String()
+	relativePath := (sendPart + validatePart)
+	fullURL := BuildUrl(relativePath)
 
 	for _, item := range items {
 		json, _ := json.Marshal(item)
@@ -59,15 +54,14 @@ func send(cmd *cobra.Command, items []models.SendItem) {
 
 		resp, _ := PerformRequest(req, client)
 
-		ToVerbose("%v sent successfully (%v)", item.File_Name, resp.Status)
+		toVerbose("%v sent successfully (%v)", item.File_Name, resp.Status)
 		delete, _ := cmd.Flags().GetBool("delete")
 		if delete {
 			err := os.Remove(item.FilePath)
 			if err != nil {
 				log.Fatalf("Error deleting %v: %v", item.File_Name, err)
 			}
-			ToVerbose("%v deleted (--delete)", item.File_Name)
-
+			toVerbose("%v deleted (--delete)", item.File_Name)
 		}
 	}
 
@@ -88,7 +82,7 @@ func build(args []string) []models.SendItem {
 				log.Fatal(err)
 			}
 			item := models.SendItem{FilePath: file, File_Name: filepath.Base(file), Payload: base64.StdEncoding.EncodeToString(content)}
-			ToVerbose("%v selected and encoded (base64)", item.File_Name)
+			toVerbose("%v selected and encoded (base64)", item.File_Name)
 			items = append(items, item)
 		}
 	}

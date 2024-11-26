@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -17,7 +16,6 @@ import (
 
 	"github.com/CIR2000/inv/models"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var as_json bool
@@ -39,14 +37,13 @@ to quickly create a Cobra application.`,
 }
 
 func receiveRun(cmd *cobra.Command, args []string) {
-	baseURL, _ := url.Parse(viper.GetString("host") + "v" + strconv.Itoa(viper.GetInt("version")) + "/")
 	receivePart := "receive"
 	unreadPart := ""
 	if unread {
 		unreadPart = "/?unread=true"
 	}
-	relativePath, _ := url.Parse(receivePart + unreadPart)
-	fullURL := baseURL.ResolveReference(relativePath).String()
+	relativePath := receivePart + unreadPart
+	fullURL := BuildUrl(relativePath)
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -91,10 +88,8 @@ func receiveRun(cmd *cobra.Command, args []string) {
 
 }
 func remoteDelete(id int) {
-	baseURL, _ := url.Parse(viper.GetString("host") + "v" + strconv.Itoa(viper.GetInt("version")) + "/")
-	relativePath, _ := url.Parse("receive/" + strconv.Itoa(id))
-	fullURL := baseURL.ResolveReference(relativePath).String()
-	fmt.Println(fullURL)
+	relativePath := ("receive/" + strconv.Itoa(id))
+	fullURL := BuildUrl(relativePath)
 	req, err := http.NewRequest("DELETE", fullURL, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -104,12 +99,10 @@ func remoteDelete(id int) {
 }
 
 func getFullFilePath(dest, filename string) (string, error) {
-	// Assicurarsi che la directory di destinazione abbia il separatore finale
 	if !strings.HasSuffix(dest, string(os.PathSeparator)) {
 		dest += string(os.PathSeparator)
 	}
 
-	// Costruire il filepath completo
 	return filepath.Join(dest, filename), nil
 }
 
@@ -119,6 +112,6 @@ func init() {
 	receiveCmd.Flags().BoolVar(&as_json, "json", false, "response as json, no file will be saved")
 	receiveCmd.Flags().BoolVarP(&assume_yes, "yes", "y", false, "assume yes on all answers")
 	receiveCmd.Flags().BoolVar(&unread, "unread", false, "fetch unread documents only")
-	receiveCmd.Flags().BoolVar(&remote_delete, "delete", false, "once the file has been downloaded, delete it from remote")
+	receiveCmd.Flags().BoolVar(&remote_delete, "delete", false, "once the file has been downloaded, delete it from the remote API")
 	receiveCmd.Flags().StringVarP(&outdir, "dest", "d", "", "destination directory")
 }

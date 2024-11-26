@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "",
@@ -46,19 +45,19 @@ to quickly create a Cobra application.`,
 var apikeyCmd = &cobra.Command{
 	Use:   "apikey [value]",
 	Short: "sets the API key and saves it for reuse (use with caution)",
-	Args:  cobra.ExactArgs(1), // Richiede esattamente un argomento
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		value := args[0]
 		viper.Set("apikey", value)
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		ToVerbose("API key set to: %s\n", value)
+		toVerbose("API key set to: %s\n", value)
 	},
 }
 var hostCmd = &cobra.Command{
 	Use:   "host [value]",
-	Short: "sets the remote host (https://example.com/) and saves it",
+	Short: "sets the remote host",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		value := args[0]
@@ -66,13 +65,13 @@ var hostCmd = &cobra.Command{
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		ToVerbose("host set to: %s\n", value)
+		toVerbose("host set to: %s\n", value)
 	},
 }
 
 var verboseCmd = &cobra.Command{
 	Use:   "verbose [bool]",
-	Short: "sets the verbose mode and saves it",
+	Short: "sets the verbose mode",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		value, err := strconv.ParseBool(args[0])
@@ -83,23 +82,7 @@ var verboseCmd = &cobra.Command{
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		ToVerbose("verbose set to: %v", value)
-	},
-}
-var versionCmd = &cobra.Command{
-	Use:   "version [value]",
-	Short: "sets the version of the API",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		value, err := strconv.ParseInt(args[0], 0, 16)
-		if err != nil {
-			log.Fatal(err)
-		}
-		viper.Set("version", value)
-		if err := viper.WriteConfig(); err != nil {
-			log.Fatalf("Error saving the configuration file: %v", err)
-		}
-		ToVerbose("verbose set to: %v", value)
+		toVerbose("verbose set to: %v", value)
 	},
 }
 
@@ -123,7 +106,7 @@ func openEditor(filename string) error {
 }
 
 func init() {
-	configCmd.AddCommand(apikeyCmd, hostCmd, verboseCmd, versionCmd)
+	configCmd.AddCommand(apikeyCmd, hostCmd, verboseCmd)
 	rootCmd.AddCommand(configCmd)
 
 	configCmd.Flags().BoolP("list", "l", false, "list all")
