@@ -28,12 +28,7 @@ var receiveCmd = &cobra.Command{
 	Use:   "receive",
 	Short: "receive invoice file(s)",
 	Long: `
-Download one or more invoice file(s) from the API.
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Download one or more invoice file(s) from the API.`,
 	Run: receiveRun,
 }
 
@@ -110,9 +105,9 @@ func getFullFilePath(dest, filename string) (string, error) {
 func init() {
 	rootCmd.AddCommand(receiveCmd)
 
-	receiveCmd.Flags().BoolVar(&as_json, "json", false, "response as json, no file will be saved")
+	receiveCmd.Flags().BoolVar(&as_json, "json", false, "response as json; no file will be saved")
 	receiveCmd.Flags().BoolVarP(&assume_yes, "yes", "y", false, "assume yes on all answers")
-	receiveCmd.Flags().BoolVar(&unread, "unread", false, "fetch unread documents only")
-	receiveCmd.Flags().BoolVar(&remote_delete, "delete", false, "once the file has been downloaded, delete it from the remote API")
+	receiveCmd.Flags().BoolVarP(&unread, "unread", "u", false, "fetch unread documents only")
+	receiveCmd.Flags().BoolVar(&remote_delete, "delete", false, "once the file has been downloaded, delete it from the API")
 	receiveCmd.Flags().StringVarP(&outdir, "dest", "d", "", "destination directory")
 }

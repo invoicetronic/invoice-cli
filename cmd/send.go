@@ -23,6 +23,7 @@ var sendCmd = &cobra.Command{
 Send one or more invoice file(s) to the eInvoice API.
 
 You can list multiple files and use wildcards. For example:
+
 invoice send file1.xml file2.xml
 invoice send dir/*.xml --delete`,
 	Run: sendRun,
