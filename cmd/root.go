@@ -41,6 +41,9 @@ It leverages Invoicetronic's eInvoice API to quickly and seamlessly send and
 receive invoices from the command line.
 
 For more information, please visit https://invoicetronic.com.`,
+	CompletionOptions: cobra.CompletionOptions{
+		DisableDefaultCmd: true,
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
