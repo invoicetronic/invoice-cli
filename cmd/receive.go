@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CIR2000/inv/models"
+	"github.com/invoicetronic/invoice/models"
 	"github.com/spf13/cobra"
 )
 
@@ -26,8 +26,9 @@ var assume_yes bool
 
 var receiveCmd = &cobra.Command{
 	Use:   "receive",
-	Short: "Receive invoices",
-	Long: `A longer description that spans multiple lines and likely contains examples
+	Short: "receive invoice file(s)",
+	Long: `
+Download one or more invoice file(s) from the API.
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.

@@ -12,16 +12,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/CIR2000/inv/models"
+	"github.com/invoicetronic/invoice/models"
 	"github.com/spf13/cobra"
 )
 
 var sendCmd = &cobra.Command{
 	Use:   "send",
-	Short: "Send one or more invoices",
-	Long: `Send one or more invoice file(s) to the API.
-You can list multiple files and use wildcards. For example:
+	Short: "send invoice file(s)",
+	Long: `
+Send one or more invoice file(s) to the eInvoice API.
 
+You can list multiple files and use wildcards. For example:
 invoice send file1.xml file2.xml
 invoice send dir/*.xml --delete`,
 	Run: sendRun,

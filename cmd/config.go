@@ -17,17 +17,13 @@ import (
 
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "configuration management",
+	Long: `
+Sets configuration options for the command.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		list, _ := cmd.Flags().GetBool("list")
 		if list {
-			fmt.Println("Using " + viper.ConfigFileUsed())
+			fmt.Println("Configuration file: " + viper.ConfigFileUsed())
 			for key, value := range viper.AllSettings() {
 				fmt.Printf("%s: %v\n", key, value)
 			}
@@ -44,7 +40,9 @@ to quickly create a Cobra application.`,
 
 var apikeyCmd = &cobra.Command{
 	Use:   "apikey [value]",
-	Short: "sets the API key and saves it for reuse (use with caution)",
+	Short: "sets the API key (use with caution, it's sensitive data)",
+	Long: `
+Sets the API key. Use with caution, it's sensitive data.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		value := args[0]
@@ -52,12 +50,14 @@ var apikeyCmd = &cobra.Command{
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		toVerbose("API key set to: %s\n", value)
+		toVerbose("api key set to: %s\n", value)
 	},
 }
 var hostCmd = &cobra.Command{
 	Use:   "host [value]",
 	Short: "sets the remote host",
+	Long: `
+Sets the remote host. Use the full address, including the protocol.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		value := args[0]
@@ -72,6 +72,8 @@ var hostCmd = &cobra.Command{
 var verboseCmd = &cobra.Command{
 	Use:   "verbose [bool]",
 	Short: "sets the verbose mode",
+	Long: `
+Sets the verbose mode. Use 'true' or 'false'.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		value, err := strconv.ParseBool(args[0])

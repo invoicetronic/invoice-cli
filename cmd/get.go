@@ -9,20 +9,16 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/CIR2000/inv/models"
+	"github.com/invoicetronic/invoice/models"
 	"github.com/spf13/cobra"
 )
 
 var getCmd = &cobra.Command{
 	Use:   "get [integer]",
-	Short: "Get an invoice by ID",
+	Short: "get an invoice by ID",
+	Long: `
+Get an invoice by ID.`,
 	Args:  cobra.ExactArgs(1),
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: getRun,
 }
 

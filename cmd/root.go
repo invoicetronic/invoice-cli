@@ -18,24 +18,29 @@ import (
 	"github.com/spf13/viper"
 )
 
+
+const product_name string = "eInvoice API"
+const default_host string = "https://api.invoicetronic.com"
+const api_version int = 1
+
 var cfgFile string
 var apiKey string
 var host string
 var verbose bool
-
-const product_name string = "Invoicetronic Italian Invoice API"
-const default_host string = "https://api.invoicetronic.com"
-const api_version int = 1
+var home, _ = os.UserHomeDir()
+var default_config_file string = filepath.Join(home,".invoice.yaml")
 
 var rootCmd = &cobra.Command{
-	Use:   "inv",
-	Short: "Send and receive invoices via " + product_name,
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Use:   "invoice",
+	Short: "send and receive invoice file(s) via " + product_name,
+	Long: `
+Invoice is a CLI command to exchange electronic invoices with the Servizio di 
+Interscambio (SDI), the official Italian invoice exchange service. 
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+It leverages Invoicetronic's eInvoice API to quickly and seamlessly send and 
+receive invoices from the command line.
+
+For more information, please visit https://invoicetronic.com.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -82,15 +87,15 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", "", "config file, default is $HOME/.inv.yaml")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", default_config_file, "configuration file")
 
-	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "your API key for"+product_name)
+	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "api key for "+product_name)
 	viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
 
-	rootCmd.PersistentFlags().StringVar(&host, "host", default_host, "API base address, defaults to "+default_host)
+	rootCmd.PersistentFlags().StringVar(&host, "host", default_host, "host address")
 	viper.BindPFlag("host", rootCmd.PersistentFlags().Lookup("host"))
 
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "display a more verbose outut")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "display a more verbose output")
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 
 }
@@ -152,7 +157,7 @@ func toVerbose(format string, v ...any) {
 
 func BuildUrl(relativePath string) string {
 	base, _ := url.Parse(viper.GetString("host"))
-	base.Path = path.Join(base.Path, "/invoice/v"+strconv.Itoa(api_version), relativePath)
+	base.Path = path.Join(base.Path, "/v"+strconv.Itoa(api_version), relativePath)
 	return base.String()
 }
 
@@ -168,12 +173,12 @@ func initConfig() {
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".inv")
+		viper.SetConfigName(".invoice")
 		viper.AddConfigPath(home)
 
-		viper.SafeWriteConfigAs(filepath.Join(home, ".inv.yaml"))
+		viper.SafeWriteConfigAs(default_config_file)
 	}
-	viper.SetEnvPrefix("inv")
+	viper.SetEnvPrefix("invoice")
 	viper.AutomaticEnv()
 	viper.ReadInConfig()
 }

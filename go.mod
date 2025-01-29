@@ -1,4 +1,4 @@
-module github.com/CIR2000/inv
+module github.com/invoicetronic/invoice
 
 go 1.23.2
 
