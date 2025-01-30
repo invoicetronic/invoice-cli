@@ -31,6 +31,13 @@ jobs:
             echo "IS_PRERELEASE=false" >> $GITHUB_ENV
           fi
 
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          VERSION=${{ env.PACKAGE_VERSION }}
+          awk "/^## $VERSION\$/,/^## /{ if (!/^## $VERSION\$/) print }" CHANGELOG.md | head -n -1 > RELEASE_NOTES.md || echo "No changelog entry found" > RELEASE_NOTES.md
+        env:
+          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
+
       - name: Run Makefile to generate assets
         run: make all
         env:
@@ -45,7 +52,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          body: "Automated release for tag ${{ github.ref_name }}."
+          body_path: RELEASE_NOTES.md
           draft: true
           prerelease: ${{ env.IS_PRERELEASE }}
           files: builds/*
