@@ -19,9 +19,11 @@ import (
 )
 
 
+const version = "1.0.0"
 const product_name string = "eInvoice API"
 const default_host string = "https://api.invoicetronic.com"
 const api_version int = 1
+
 
 var cfgFile string
 var apiKey string
@@ -44,6 +46,7 @@ For more information, please visit https://invoicetronic.com.`,
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDefaultCmd: true,
 	},
+	Version: version,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
