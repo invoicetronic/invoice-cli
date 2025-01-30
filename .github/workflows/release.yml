@@ -1,0 +1,54 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.2'  
+
+      - name: Verify Go installation
+        run: go version
+
+      - name: Extract version from tag
+        run: |
+          echo "PACKAGE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          if [[ "${GITHUB_REF#refs/tags/}" =~ -alpha|-beta|-rc ]]; then
+            echo "IS_PRERELEASE=true" >> $GITHUB_ENV
+          else
+            echo "IS_PRERELEASE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Run Makefile to generate assets
+        run: make all
+        env:
+          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
+
+      - name: List generated assets
+        run: ls -lh builds/
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: "Automated release for tag ${{ github.ref_name }}."
+          draft: true
+          prerelease: ${{ env.IS_PRERELEASE }}
+          files: builds/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IS_PRERELEASE: ${{ env.IS_PRERELEASE }}
