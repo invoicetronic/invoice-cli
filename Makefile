@@ -7,6 +7,8 @@ windows: check-env
 	cd builds && zip invoice-cli-${PACKAGE_VERSION}-windows-x64.zip invoice.exe
 	GOOS=windows GOARCH=386 go build -o builds/invoice.exe
 	cd builds && zip invoice-cli-${PACKAGE_VERSION}-windows-x86.zip invoice.exe
+	GOOS=windows GOARCH=arm64 go build -o builds/invoice.exe
+	cd builds && zip invoice-cli-${PACKAGE_VERSION}-windows-arm64.zip invoice.exe
 
 linux: check-env
 	GOOS=linux GOARCH=amd64 go build -o builds/invoice
