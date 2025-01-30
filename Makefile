@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-all: windows linux darwin cleanup-binaries
+all: windows linux macos cleanup-binaries
 
 windows: check-env
 	GOOS=windows GOARCH=amd64 go build -o builds/invoice.exe
@@ -16,11 +16,11 @@ linux: check-env
 	GOOS=linux GOARCH=arm64 go build -o builds/invoice
 	cd builds && tar czf invoice-cli-${PACKAGE_VERSION}-linux-arm64.tar.gz invoice
 
-darwin: check-env
+macos: check-env
 	GOOS=darwin GOARCH=amd64 go build -o builds/invoice
-	cd builds && tar czf invoice-cli-${PACKAGE_VERSION}-darwin-amd64.tar.gz invoice
+	cd builds && tar czf invoice-cli-${PACKAGE_VERSION}-macos-amd64.tar.gz invoice
 	GOOS=darwin GOARCH=arm64 go build -o builds/invoice
-	cd builds && tar czf invoice-cli-${PACKAGE_VERSION}-darwin-arm64.tar.gz invoice
+	cd builds && tar czf invoice-cli-${PACKAGE_VERSION}-macos-arm64.tar.gz invoice
 
 clean:
 	rm -rf builds/
