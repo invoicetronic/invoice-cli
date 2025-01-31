@@ -22,8 +22,7 @@ invoice send file1.xml file2.xml file3.xml
 ```
 
 In the first line above, we're also deleting files from the disk once
-successfully uploaded. On the second line, we're explicitly listing the files to
-upload.
+successfully uploaded. 
 
 Receiving files is also super simple:
 
