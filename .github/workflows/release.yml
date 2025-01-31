@@ -8,7 +8,7 @@ on:
 jobs:
   release:
     name: Create GitHub Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout repository
@@ -40,9 +40,9 @@ jobs:
         run: ls -lh builds/
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:v5
+        uses: docker://antonyurchenko/git-release:v6
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.INVOICE_PAT }}
           PRE_RELEASE: ${{ env.PRE_RELEASE }}
         with:
           args: builds/*
