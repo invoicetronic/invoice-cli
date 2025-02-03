@@ -7,14 +7,25 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/invoicetronic/invoice/models"
 	"github.com/spf13/cobra"
 )
+
+var signature string
+var validate bool
+var delete bool
+
+const auto = "auto"
+const apply = "apply"
+const none = "none"
 
 var sendCmd = &cobra.Command{
 	Use:   "send",
@@ -26,47 +37,55 @@ You can list multiple files and use wildcards. For example:
 
 invoice send file1.xml file2.xml
 invoice send dir/*.xml --delete`,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		allowed := map[string]bool{
+			auto:  true,
+			apply: true,
+			none:  true,
+		}
+
+		if !allowed[signature] {
+			return fmt.Errorf("invalid signature: %s. Allowed values: %s, %s, %s", signature, auto, apply, none)
+		}
+		return nil
+	},
 	Run: sendRun,
 }
 
 func sendRun(cmd *cobra.Command, args []string) {
 	items := build(args)
-	send(cmd, items)
+	send(items)
 }
 
-func send(cmd *cobra.Command, items []models.SendItem) {
+func send(items []models.SendItem) {
 	client := &http.Client{}
-	validate, _ := cmd.Flags().GetBool("validate")
-	sendPart := "send"
-	validatePart := ""
-	if validate {
-		validatePart = "/?validate=true"
-	}
-	relativePath := (sendPart + validatePart)
-	fullURL := BuildUrl(relativePath)
+
+	url := BuildEndpointUrl("send")
+	q := url.Query()
+	q.Set("validate", strconv.FormatBool(validate))
+	q.Set("signature", capitalizeFirst(signature))
+	url.RawQuery = q.Encode()
 
 	for _, item := range items {
 		json, _ := json.Marshal(item)
 		jsonBytes := []byte(json)
 
-		req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonBytes))
+		req, err := http.NewRequest("POST", url.String(), bytes.NewBuffer(jsonBytes))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		resp, _ := PerformRequest(req, client)
 
-		toVerbose("%v sent successfully (%v)", item.File_Name, resp.Status)
-		delete, _ := cmd.Flags().GetBool("delete")
+		Verbose("%v sent (%v)", item.File_Name, resp.Status)
 		if delete {
 			err := os.Remove(item.FilePath)
 			if err != nil {
 				log.Fatalf("Error deleting %v: %v", item.File_Name, err)
 			}
-			toVerbose("%v deleted (--delete)", item.File_Name)
+			Verbose("%v deleted (--delete)", item.File_Name)
 		}
 	}
-
 }
 
 func build(args []string) []models.SendItem {
@@ -84,16 +103,24 @@ func build(args []string) []models.SendItem {
 				log.Fatal(err)
 			}
 			item := models.SendItem{FilePath: file, File_Name: filepath.Base(file), Payload: base64.StdEncoding.EncodeToString(content)}
-			toVerbose("%v selected and encoded (base64)", item.File_Name)
+			Verbose("%v selected and encoded (base64)", item.File_Name)
 			items = append(items, item)
 		}
 	}
 	return items
 }
 
+func capitalizeFirst(s string) string {
+	if s == "" {
+		return s
+	}
+	return strings.ToUpper(string(s[0])) + s[1:]
+}
+
 func init() {
 	rootCmd.AddCommand(sendCmd)
 
-	sendCmd.Flags().Bool("delete", false, "once the file has been sent, delete it from disk")
-	sendCmd.Flags().Bool("validate", false, "validate first, and reject it the document is invalid")
+	sendCmd.Flags().BoolVar(&delete, "delete", false, "once the file has been sent, delete it from disk")
+	sendCmd.Flags().BoolVar(&validate, "validate", false, "validate first, and reject it the document is invalid")
+	sendCmd.Flags().StringVar(&signature, "signature", auto, fmt.Sprintf("signature method (%s, %s, %s)", auto, apply, none))
 }

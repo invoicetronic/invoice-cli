@@ -43,14 +43,14 @@ var apikeyCmd = &cobra.Command{
 	Short: "sets the API key (use with caution, it's sensitive data)",
 	Long: `
 Sets the API key. Use with caution, it's sensitive data.`,
-	Args:  cobra.ExactArgs(1),
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		value := args[0]
 		viper.Set("apikey", value)
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		toVerbose("api key set to: %s\n", value)
+		Verbose("api key set to: %s\n", value)
 	},
 }
 var hostCmd = &cobra.Command{
@@ -58,14 +58,14 @@ var hostCmd = &cobra.Command{
 	Short: "sets the remote host",
 	Long: `
 Sets the remote host. Use the full address, including the protocol.`,
-	Args:  cobra.ExactArgs(1),
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		value := args[0]
 		viper.Set("host", value)
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		toVerbose("host set to: %s\n", value)
+		Verbose("host set to: %s\n", value)
 	},
 }
 
@@ -74,7 +74,7 @@ var verboseCmd = &cobra.Command{
 	Short: "sets the verbose mode",
 	Long: `
 Sets the verbose mode. Use 'true' or 'false'.`,
-	Args:  cobra.ExactArgs(1),
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		value, err := strconv.ParseBool(args[0])
 		if err != nil {
@@ -84,7 +84,7 @@ Sets the verbose mode. Use 'true' or 'false'.`,
 		if err := viper.WriteConfig(); err != nil {
 			log.Fatalf("Error saving the configuration file: %v", err)
 		}
-		toVerbose("verbose set to: %v", value)
+		Verbose("verbose set to: %v", value)
 	},
 }
 

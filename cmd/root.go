@@ -18,19 +18,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-
 const version = "1.0.0"
 const product_name string = "eInvoice API"
 const default_host string = "https://api.invoicetronic.com"
 const api_version int = 1
-
 
 var cfgFile string
 var apiKey string
 var host string
 var verbose bool
 var home, _ = os.UserHomeDir()
-var default_config_file string = filepath.Join(home,".invoice.yaml")
+var default_config_file string = filepath.Join(home, ".invoice.yaml")
 
 var rootCmd = &cobra.Command{
 	Use:   "invoice",
@@ -107,7 +105,7 @@ func init() {
 }
 
 func ToFile(filename string, payload string) {
-	toVerbose("Decoding payload for %v\n", filename)
+	Verbose("Decoding payload for %v\n", filename)
 	decodedData, err := base64.StdEncoding.DecodeString(payload)
 	if err != nil {
 		log.Fatalf("Error decoding "+filename+": %v", err)
@@ -128,20 +126,20 @@ func ToFile(filename string, payload string) {
 		filePath = filename
 	}
 
-	toVerbose("Creating file %v\n", filename)
+	Verbose("Creating file %v\n", filename)
 	file, err := os.Create(filePath)
 	if err != nil {
 		log.Fatalf("Error creating "+filename+": %v", err)
 	}
 	defer file.Close()
 
-	toVerbose("Writing to file %v\n", filename)
+	Verbose("Writing to file %v\n", filename)
 	_, err = file.Write(decodedData)
 	if err != nil {
 		log.Fatalf("Error writing to file "+filename+": %v", err)
 	}
 
-	toVerbose("Write to %v succeded\n", filename)
+	Verbose("Write to %v succeded\n", filename)
 }
 
 func createDirectoryIfNotExists(dest string) error {
@@ -154,17 +152,18 @@ func createDirectoryIfNotExists(dest string) error {
 	return nil
 }
 
-func toVerbose(format string, v ...any) {
+func Verbose(format string, v ...any) {
 	if !verbose {
 		return
 	}
 	log.Printf(format, v...)
 }
 
-func BuildUrl(relativePath string) string {
-	base, _ := url.Parse(viper.GetString("host"))
-	base.Path = path.Join(base.Path, "/v"+strconv.Itoa(api_version), relativePath)
-	return base.String()
+func BuildEndpointUrl(elem ...string) *url.URL {
+	url, _ := url.Parse(viper.GetString("host"))
+	joinedPath := append([]string{url.Path, "/v" + strconv.Itoa(api_version)}, elem...)
+	url.Path = path.Join(joinedPath...)
+	return url
 }
 
 func initConfig() {

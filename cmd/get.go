@@ -18,15 +18,14 @@ var getCmd = &cobra.Command{
 	Short: "get an invoice by ID",
 	Long: `
 Get an invoice by ID.`,
-	Args:  cobra.ExactArgs(1),
-	Run: getRun,
+	Args: cobra.ExactArgs(1),
+	Run:  getRun,
 }
 
 func getRun(cmd *cobra.Command, args []string) {
 	id := args[0]
-	relativePath := "receive" + "/" + id
-	fullURL := BuildUrl(relativePath)
-	req, err := http.NewRequest("GET", fullURL, nil)
+	url := BuildEndpointUrl("receive", id)
+	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}

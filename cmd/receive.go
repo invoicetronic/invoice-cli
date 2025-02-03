@@ -33,14 +33,11 @@ Download one or more invoice file(s) from the API.`,
 }
 
 func receiveRun(cmd *cobra.Command, args []string) {
-	receivePart := "receive"
-	unreadPart := ""
-	if unread {
-		unreadPart = "/?unread=true"
-	}
-	relativePath := receivePart + unreadPart
-	fullURL := BuildUrl(relativePath)
-	req, err := http.NewRequest("GET", fullURL, nil)
+	url := BuildEndpointUrl("receive")
+	q := url.Query()
+	q.Set("unread", strconv.FormatBool(unread))
+	url.RawQuery = q.Encode()
+	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,9 +81,8 @@ func receiveRun(cmd *cobra.Command, args []string) {
 
 }
 func remoteDelete(id int) {
-	relativePath := ("receive/" + strconv.Itoa(id))
-	fullURL := BuildUrl(relativePath)
-	req, err := http.NewRequest("DELETE", fullURL, nil)
+	url := BuildEndpointUrl("receive", strconv.Itoa(id))
+	req, err := http.NewRequest("DELETE", url.String(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
