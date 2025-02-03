@@ -45,7 +45,7 @@ func receiveRun(cmd *cobra.Command, args []string) {
 	_, respBody := PerformRequest(req, &http.Client{})
 
 	var response models.Response
-	if err := json.Unmarshal(respBody, &response); err != nil {
+	if err := json.Unmarshal(respBody, &response.Items); err != nil {
 		log.Fatal(err)
 	}
 
