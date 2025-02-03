@@ -70,7 +70,7 @@ func receiveRun(cmd *cobra.Command, args []string) {
 			input = strings.TrimSpace(input)
 
 			if strings.ToLower(input) == "n" || input == "" {
-				fmt.Println("Remote delete canceleted.")
+				fmt.Println("Remote delete canceled.")
 				return
 			}
 		}
