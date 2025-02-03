@@ -11,6 +11,3 @@ type ReceiveItem struct {
 	Payload   string `json:"payload"`
 	File_Name string `json:"file_name"`
 }
-type Response struct {
-	Items []ReceiveItem `json:"$values"`
-}

@@ -44,24 +44,24 @@ func receiveRun(cmd *cobra.Command, args []string) {
 
 	_, respBody := PerformRequest(req, &http.Client{})
 
-	var response models.Response
-	if err := json.Unmarshal(respBody, &response.Items); err != nil {
+	var items []models.ReceiveItem
+	if err := json.Unmarshal(respBody, &items); err != nil {
 		log.Fatal(err)
 	}
 
 	if as_json {
-		jsonData, err := json.Marshal(response.Items)
+		jsonData, err := json.Marshal(items)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		fmt.Println(string(jsonData))
 	} else {
-		for _, item := range response.Items {
+		for _, item := range items {
 			ToFile(item.File_Name, item.Payload)
 		}
 	}
-	if remote_delete && len(response.Items) > 0 {
+	if remote_delete && len(items) > 0 {
 		if !assume_yes {
 			reader := bufio.NewReader(os.Stdin)
 
@@ -74,7 +74,7 @@ func receiveRun(cmd *cobra.Command, args []string) {
 				return
 			}
 		}
-		for _, item := range response.Items {
+		for _, item := range items {
 			remoteDelete(item.Id)
 		}
 	}
