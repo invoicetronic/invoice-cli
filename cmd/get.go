@@ -37,7 +37,7 @@ func getRun(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	if as_json {
+	if asJson {
 		jsonData, err := json.Marshal(response)
 		if err != nil {
 			log.Fatal(err)
@@ -46,13 +46,13 @@ func getRun(cmd *cobra.Command, args []string) {
 		fmt.Println(string(jsonData))
 	}
 
-	ToFile(response.File_Name, response.Payload)
+	ToFile(response.FileName, response.Payload)
 
 }
 
 func init() {
 	rootCmd.AddCommand(getCmd)
 
-	getCmd.Flags().BoolVar(&as_json, "json", false, "response as json")
-	getCmd.Flags().StringVarP(&outdir, "dest", "d", "", "destination directory")
+	getCmd.Flags().BoolVar(&asJson, "json", false, "response as json")
+	getCmd.Flags().StringVarP(&outputDir, "dest", "d", "", "destination directory")
 }

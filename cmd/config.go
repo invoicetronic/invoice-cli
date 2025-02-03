@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 Nicola Iarocci & CIR 2000
-*/
 package cmd
 
 import (
@@ -32,7 +29,7 @@ Sets configuration options for the command.`,
 
 		editor, _ := cmd.Flags().GetBool("edit")
 		if editor {
-			openEditor(viper.ConfigFileUsed())
+			_ = openEditor(viper.ConfigFileUsed())
 			os.Exit(0)
 		}
 	},

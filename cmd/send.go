@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 Nicola Iarocci & CIR 2000
-*/
 package cmd
 
 import (
@@ -21,7 +18,7 @@ import (
 
 var signature string
 var validate bool
-var delete bool
+var del bool
 
 const auto = "auto"
 const apply = "apply"
@@ -52,7 +49,7 @@ invoice send dir/*.xml --delete`,
 	Run: sendRun,
 }
 
-func sendRun(cmd *cobra.Command, args []string) {
+func sendRun(_ *cobra.Command, args []string) {
 	items := build(args)
 	send(items)
 }
@@ -67,8 +64,7 @@ func send(items []models.SendItem) {
 	url.RawQuery = q.Encode()
 
 	for _, item := range items {
-		json, _ := json.Marshal(item)
-		jsonBytes := []byte(json)
+		jsonBytes, _ := json.Marshal(item)
 
 		req, err := http.NewRequest("POST", url.String(), bytes.NewBuffer(jsonBytes))
 		if err != nil {
@@ -77,20 +73,20 @@ func send(items []models.SendItem) {
 
 		resp, _ := PerformRequest(req, client)
 
-		Verbose("%v sent (%v)", item.File_Name, resp.Status)
-		if delete {
+		Verbose("%v sent (%v)", item.FileName, resp.Status)
+		if del {
 			err := os.Remove(item.FilePath)
 			if err != nil {
-				log.Fatalf("Error deleting %v: %v", item.File_Name, err)
+				log.Fatalf("Error deleting %v: %v", item.FileName, err)
 			}
-			Verbose("%v deleted (--delete)", item.File_Name)
+			Verbose("%v deleted (--delete)", item.FileName)
 		}
 	}
 }
 
 func build(args []string) []models.SendItem {
 
-	items := []models.SendItem{}
+	var items []models.SendItem
 	for _, arg := range args {
 		files, err := filepath.Glob(arg)
 		if err != nil {
@@ -102,8 +98,8 @@ func build(args []string) []models.SendItem {
 			if err != nil {
 				log.Fatal(err)
 			}
-			item := models.SendItem{FilePath: file, File_Name: filepath.Base(file), Payload: base64.StdEncoding.EncodeToString(content)}
-			Verbose("%v selected and encoded (base64)", item.File_Name)
+			item := models.SendItem{FilePath: file, FileName: filepath.Base(file), Payload: base64.StdEncoding.EncodeToString(content)}
+			Verbose("%v selected and encoded (base64)", item.FileName)
 			items = append(items, item)
 		}
 	}
@@ -120,7 +116,7 @@ func capitalizeFirst(s string) string {
 func init() {
 	rootCmd.AddCommand(sendCmd)
 
-	sendCmd.Flags().BoolVar(&delete, "delete", false, "once the file has been sent, delete it from disk")
+	sendCmd.Flags().BoolVar(&del, "delete", false, "once the file has been sent, delete it from disk")
 	sendCmd.Flags().BoolVar(&validate, "validate", false, "validate first, and reject it the document is invalid")
 	sendCmd.Flags().StringVar(&signature, "signature", auto, fmt.Sprintf("signature method (%s, %s, %s)", auto, apply, none))
 }

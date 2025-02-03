@@ -1,13 +1,13 @@
 package models
 
 type SendItem struct {
-	Payload   string
-	File_Name string
-	FilePath  string
+	Payload  string
+	FileName string
+	FilePath string
 }
 
 type ReceiveItem struct {
-	Id        int
-	Payload   string `json:"payload"`
-	File_Name string `json:"file_name"`
+	Id       int
+	Payload  string `json:"payload"`
+	FileName string `json:"file_name"`
 }

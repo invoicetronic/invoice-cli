@@ -26,3 +26,4 @@ go.work.sum
 inv
 builds/
 invoice
+.idea/

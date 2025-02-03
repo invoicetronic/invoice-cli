@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 Nicola Iarocci & CIR 2000
-*/
 package cmd
 
 import (
@@ -19,36 +16,34 @@ import (
 )
 
 const version = "1.0.0"
-const product_name string = "eInvoice API"
-const default_host string = "https://api.invoicetronic.com"
-const api_version int = 1
+const productName string = "eInvoice API"
+const defaultHost string = "https://api.invoicetronic.com"
+const apiVersion int = 1
 
 var cfgFile string
 var apiKey string
 var host string
 var verbose bool
 var home, _ = os.UserHomeDir()
-var default_config_file string = filepath.Join(home, ".invoice.yaml")
+var defaultConfigFile = filepath.Join(home, ".invoice.yaml")
 
 var rootCmd = &cobra.Command{
 	Use:   "invoice",
-	Short: "send and receive invoice file(s) via " + product_name,
+	Short: "send and receive invoice file(s) via " + productName,
 	Long: `
 Invoice is a CLI command to exchange electronic invoices with the Servizio di 
 Interscambio (SDI), the official Italian invoice exchange service. 
 
-It leverages Invoicetronic's eInvoice API to quickly and seamlessly send and 
+It leverages Invoicetronic eInvoice API to quickly and seamlessly send and 
 receive invoices from the command line.
 
-For more information, please visit https://invoicetronic.com.`,
+For more information, please visit https://invoicetronic.com`,
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDefaultCmd: true,
 	},
 	Version: version,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -69,7 +64,9 @@ func PerformRequest(req *http.Request, client *http.Client) (*http.Response, []b
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -91,16 +88,16 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", default_config_file, "configuration file")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", defaultConfigFile, "configuration file")
 
-	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "api key for "+product_name)
-	viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
+	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "api key for "+productName)
+	_ = viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
 
-	rootCmd.PersistentFlags().StringVar(&host, "host", default_host, "host address")
-	viper.BindPFlag("host", rootCmd.PersistentFlags().Lookup("host"))
+	rootCmd.PersistentFlags().StringVar(&host, "host", defaultHost, "host address")
+	_ = viper.BindPFlag("host", rootCmd.PersistentFlags().Lookup("host"))
 
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "display a more verbose output")
-	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	_ = viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 
 }
 
@@ -112,13 +109,13 @@ func ToFile(filename string, payload string) {
 	}
 
 	var filePath string
-	if outdir != "" {
-		filePath, err = getFullFilePath(outdir, filename)
+	if outputDir != "" {
+		filePath, err = getFullFilePath(outputDir, filename)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = createDirectoryIfNotExists(outdir)
+		err = createDirectoryIfNotExists(outputDir)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -131,7 +128,9 @@ func ToFile(filename string, payload string) {
 	if err != nil {
 		log.Fatalf("Error creating "+filename+": %v", err)
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		_ = file.Close()
+	}(file)
 
 	Verbose("Writing to file %v\n", filename)
 	_, err = file.Write(decodedData)
@@ -139,7 +138,7 @@ func ToFile(filename string, payload string) {
 		log.Fatalf("Error writing to file "+filename+": %v", err)
 	}
 
-	Verbose("Write to %v succeded\n", filename)
+	Verbose("Write to %v succeeded\n", filename)
 }
 
 func createDirectoryIfNotExists(dest string) error {
@@ -160,15 +159,15 @@ func Verbose(format string, v ...any) {
 }
 
 func BuildEndpointUrl(elem ...string) *url.URL {
-	url, _ := url.Parse(viper.GetString("host"))
-	joinedPath := append([]string{url.Path, "/v" + strconv.Itoa(api_version)}, elem...)
-	url.Path = path.Join(joinedPath...)
-	return url
+	endpointUrl, _ := url.Parse(viper.GetString("host"))
+	joinedPath := append([]string{endpointUrl.Path, "/v" + strconv.Itoa(apiVersion)}, elem...)
+	endpointUrl.Path = path.Join(joinedPath...)
+	return endpointUrl
 }
 
 func initConfig() {
 
-	viper.SetDefault("host", default_host)
+	viper.SetDefault("host", defaultHost)
 	viper.SetDefault("verbose", false)
 	viper.SetDefault("apikey", "")
 
@@ -181,9 +180,9 @@ func initConfig() {
 		viper.SetConfigName(".invoice")
 		viper.AddConfigPath(home)
 
-		viper.SafeWriteConfigAs(default_config_file)
+		_ = viper.SafeWriteConfigAs(defaultConfigFile)
 	}
 	viper.SetEnvPrefix("invoice")
 	viper.AutomaticEnv()
-	viper.ReadInConfig()
+	_ = viper.ReadInConfig()
 }
