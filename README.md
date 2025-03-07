@@ -1,9 +1,9 @@
 # `invoice` command line tool
 
 __`invoice`__ lets you quickly and intuitively exchange invoice file(s) with the
-Italian Servizio di Interscambio (SDI) from the command line. It leverages the [Invoicetronic eInvoice API][1].
+Italian Servizio di Interscambio (SDI) from the command line. It leverages the [Invoicetronic API][1].
 
-You don't need to learn the [eInvoice API][1] or any programming language to
+You don't need to learn the [Invoicetronic API][1] or any programming language to
 send and receive invoices (SDKs for common programming languages are also
 [available][2]).
 
