@@ -56,7 +56,7 @@ func receiveRun(_ *cobra.Command, _ []string) {
 		fmt.Println(string(jsonData))
 	} else {
 		for _, item := range items {
-			ToFile(item.FileName, item.Payload)
+			ToFile(item.FileName, item.Payload, item.Encoding)
 		}
 	}
 	if remoteDelete && len(items) > 0 {

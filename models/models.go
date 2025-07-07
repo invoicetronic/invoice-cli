@@ -10,4 +10,5 @@ type ReceiveItem struct {
 	Id       int
 	Payload  string `json:"payload"`
 	FileName string `json:"file_name"`
+	Encoding string `json:"encoding"`
 }

@@ -101,14 +101,24 @@ func init() {
 
 }
 
-func ToFile(filename string, payload string) {
-	Verbose("Decoding payload for %v\n", filename)
-	decodedData, err := base64.StdEncoding.DecodeString(payload)
-	if err != nil {
-		log.Fatalf("Error decoding "+filename+": %v", err)
+func ToFile(filename string, payload string, encoding string) {
+	Verbose("Processing payload for %v with encoding %v\n", filename, encoding)
+	var decodedData []byte
+	
+	if encoding == "Base64" {
+		Verbose("Decoding base64 payload for %v\n", filename)
+		var err error
+		decodedData, err = base64.StdEncoding.DecodeString(payload)
+		if err != nil {
+			log.Fatalf("Error decoding base64 payload for %v: %v", filename, err)
+		}
+	} else {
+		Verbose("Using payload as plain string for %v\n", filename)
+		decodedData = []byte(payload)
 	}
 
 	var filePath string
+	var err error
 	if outputDir != "" {
 		filePath, err = getFullFilePath(outputDir, filename)
 		if err != nil {

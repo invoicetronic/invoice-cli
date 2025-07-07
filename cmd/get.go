@@ -46,7 +46,7 @@ func getRun(cmd *cobra.Command, args []string) {
 		fmt.Println(string(jsonData))
 	}
 
-	ToFile(response.FileName, response.Payload)
+	ToFile(response.FileName, response.Payload, response.Encoding)
 
 }
 
