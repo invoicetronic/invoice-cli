@@ -33,6 +33,7 @@ func receiveRun(_ *cobra.Command, _ []string) {
 	url := BuildEndpointUrl("receive")
 	q := url.Query()
 	q.Set("unread", strconv.FormatBool(unread))
+	q.Set("include_payload", "true")
 	url.RawQuery = q.Encode()
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
