@@ -27,3 +27,5 @@ inv
 builds/
 invoice
 .idea/
+CLAUDE.local.md
+.claude/
