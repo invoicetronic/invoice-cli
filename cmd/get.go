@@ -25,6 +25,9 @@ Get an invoice by ID.`,
 func getRun(cmd *cobra.Command, args []string) {
 	id := args[0]
 	url := BuildEndpointUrl("receive", id)
+	q := url.Query()
+	q.Set("include_payload", "true")
+	url.RawQuery = q.Encode()
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
 		log.Fatal(err)
