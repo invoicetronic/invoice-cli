@@ -42,7 +42,7 @@ jobs:
       - name: Release
         uses: docker://antonyurchenko/git-release:v6
         env:
-          GITHUB_TOKEN: ${{ secrets.INVOICE_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRE_RELEASE: ${{ env.PRE_RELEASE }}
         with:
           args: builds/*
