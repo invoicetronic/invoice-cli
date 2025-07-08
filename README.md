@@ -36,5 +36,5 @@ The above will download all new invoices and store them in the current directory
 
 Quickstart and context available at the [Invoicetronic website][1].
 
-[1]: https://invoicetronic.com
-[2]: https://invoicetronic.com/sdk
+[1]: https://invoicetronic.com/docs/quickstart/invoice-quickstart/
+[2]: https://invoicetronic.com/docs/sdk/
