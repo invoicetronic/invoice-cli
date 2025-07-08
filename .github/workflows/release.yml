@@ -41,10 +41,12 @@ jobs:
       - name: List generated assets
         run: ls -lh builds/
 
-      - name: Release
-        uses: docker://antonyurchenko/git-release:v6
+      - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRE_RELEASE: ${{ env.PRE_RELEASE }}
-        with:
-          args: builds/*
+        run: |
+          if [ "$PRE_RELEASE" = "true" ]; then
+            gh release create "$PACKAGE_VERSION" builds/* --title "Release $PACKAGE_VERSION" --prerelease
+          else
+            gh release create "$PACKAGE_VERSION" builds/* --title "Release $PACKAGE_VERSION"
+          fi
