@@ -27,5 +27,6 @@ inv
 builds/
 invoice
 .idea/
+.vscode/
 CLAUDE.local.md
 .claude/
