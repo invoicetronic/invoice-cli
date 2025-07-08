@@ -15,8 +15,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-const version = "1.0.0"
-const productName string = "eInvoice API"
+const version = "1.0.0-beta.1"
+const productName string = "Invoicetronic API"
 const defaultHost string = "https://api.invoicetronic.com"
 const apiVersion int = 1
 
@@ -29,13 +29,13 @@ var defaultConfigFile = filepath.Join(home, ".invoice.yaml")
 
 var rootCmd = &cobra.Command{
 	Use:   "invoice",
-	Short: "send and receive invoice file(s) via " + productName,
+	Short: "send and receive invoice file(s) via the " + productName,
 	Long: `
 Invoice is a CLI command to exchange electronic invoices with the Servizio di 
 Interscambio (SDI), the official Italian invoice exchange service. 
 
-It leverages Invoicetronic eInvoice API to quickly and seamlessly send and 
-receive invoices from the command line.
+It leverages Invoicetronic API to quickly and seamlessly send and receive 
+invoices from the command line.
 
 For more information, please visit https://invoicetronic.com`,
 	CompletionOptions: cobra.CompletionOptions{
@@ -90,7 +90,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config_file", defaultConfigFile, "configuration file")
 
-	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "api key for "+productName)
+	rootCmd.PersistentFlags().StringVar(&apiKey, "apikey", "", "api key for the "+productName)
 	_ = viper.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
 
 	rootCmd.PersistentFlags().StringVar(&host, "host", defaultHost, "host address")

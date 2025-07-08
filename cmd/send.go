@@ -28,7 +28,7 @@ var sendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "send invoice file(s)",
 	Long: `
-Send one or more invoice file(s) to the eInvoice API.
+Send one or more invoice file(s) to the Invoicetronic API.
 
 You can list multiple files and use wildcards. For example:
 

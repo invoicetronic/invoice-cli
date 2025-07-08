@@ -25,7 +25,7 @@ var receiveCmd = &cobra.Command{
 	Use:   "receive",
 	Short: "receive invoice file(s)",
 	Long: `
-Download one or more invoice file(s) from the API.`,
+Download one or more invoice file(s) from the Invoicetronic API.`,
 	Run: receiveRun,
 }
 
