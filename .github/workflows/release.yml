@@ -42,11 +42,11 @@ jobs:
         run: ls -lh builds/
 
       - name: Create Release
+        uses: docker://antonyurchenko/git-release:v5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "$PRE_RELEASE" = "true" ]; then
-            gh release create "$PACKAGE_VERSION" builds/* --title "Release $PACKAGE_VERSION" --prerelease
-          else
-            gh release create "$PACKAGE_VERSION" builds/* --title "Release $PACKAGE_VERSION"
-          fi
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          DRAFT_RELEASE: false
+          PRE_RELEASE: ${{ env.PRE_RELEASE }}
+          CHANGELOG_FILE: CHANGELOG.md
+        with:
+          args: builds/*
