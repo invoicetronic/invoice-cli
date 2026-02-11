@@ -2,11 +2,11 @@
 
 ## In Development
 
-- fix: Il comando `get --json` scriveva anche il file su disco invece di restituire solo il JSON.
-- new: Test suite completa (28 test) con refactoring per testabilità delle funzioni critiche.
-- new: Sezione Contributing nel README con istruzioni per build, test e cross-compile.
-- new: CI con GitHub Actions per eseguire vet e test suite ad ogni push e pull request.
-- new: Il workflow di release esegue la test suite prima di procedere.
+- fix: `get --json` was also writing the file to disk instead of only outputting JSON.
+- new: Comprehensive test suite (28 tests) with testability refactoring of critical functions.
+- new: Contributing section in README with build, test and cross-compile instructions.
+- new: CI with GitHub Actions to run vet and test suite on every push and pull request.
+- new: Release workflow runs the test suite before proceeding.
 
 ## [1.0.0-beta.1] - 2025-07-08
 
