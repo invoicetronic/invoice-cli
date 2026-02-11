@@ -47,15 +47,15 @@ func getRun(cmd *cobra.Command, args []string) {
 		}
 
 		fmt.Println(string(jsonData))
+	} else {
+		ToFile(response.FileName, response.Payload, response.Encoding)
 	}
-
-	ToFile(response.FileName, response.Payload, response.Encoding)
 
 }
 
 func init() {
 	rootCmd.AddCommand(getCmd)
 
-	getCmd.Flags().BoolVar(&asJson, "json", false, "response as json")
+	getCmd.Flags().BoolVar(&asJson, "json", false, "response as json; no file will be saved")
 	getCmd.Flags().StringVarP(&outputDir, "dest", "d", "", "destination directory")
 }
