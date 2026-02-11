@@ -6,7 +6,11 @@ on:
       - '*'
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   release:
+    needs: test
     name: Create GitHub Release
     runs-on: ubuntu-22.04
     permissions:
