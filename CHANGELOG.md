@@ -2,6 +2,8 @@
 
 ## In Development
 
+## [1.0.0] - 2026-02-11
+
 - fix: `get --json` was also writing the file to disk instead of only outputting JSON.
 - new: Comprehensive test suite (28 tests) with testability refactoring of critical functions.
 - new: Contributing section in README with build, test and cross-compile instructions.
