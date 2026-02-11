@@ -40,6 +40,43 @@ See the [Installation guide][3].
 
 Quickstart and context available at the [Invoicetronic website][1].
 
+## Contributing
+
+### Prerequisites
+
+- Go 1.23+
+- An [Invoicetronic API][1] key (for manual/integration testing)
+
+### Build
+
+```bash
+go build
+```
+
+### Test
+
+```bash
+go test ./...
+```
+
+Run with the race detector:
+
+```bash
+go test -race ./...
+```
+
+Tests use the standard library only (`testing` + `net/http/httptest`), with no external dependencies. API calls are mocked via `httptest.NewServer`; filesystem tests use `t.TempDir()`.
+
+### Cross-compile
+
+Requires `PACKAGE_VERSION` to be set:
+
+```bash
+PACKAGE_VERSION=1.0.0 make all
+```
+
+Target a single platform with `make windows`, `make linux`, or `make macos`.
+
 [1]: https://invoicetronic.com/docs/quickstart/invoice-quickstart/
 [2]: https://invoicetronic.com/docs/sdk/
 [3]: https://invoicetronic.com/docs/cli/#installation-guide

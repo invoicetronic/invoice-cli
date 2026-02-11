@@ -54,6 +54,32 @@ func sendRun(_ *cobra.Command, args []string) {
 	send(items)
 }
 
+func sendItems(items []models.SendItem, client *http.Client, endpoint string, deleteAfter bool) error {
+	for _, item := range items {
+		jsonBytes, _ := json.Marshal(item)
+
+		req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonBytes))
+		if err != nil {
+			return err
+		}
+
+		resp, _, err := performRequest(req, client)
+		if err != nil {
+			return err
+		}
+
+		Verbose("%v sent (%v)", item.FileName, resp.Status)
+		if deleteAfter {
+			err := os.Remove(item.FilePath)
+			if err != nil {
+				return fmt.Errorf("error deleting %v: %v", item.FileName, err)
+			}
+			Verbose("%v deleted (--delete)", item.FileName)
+		}
+	}
+	return nil
+}
+
 func send(items []models.SendItem) {
 	client := &http.Client{}
 
@@ -63,45 +89,36 @@ func send(items []models.SendItem) {
 	q.Set("signature", capitalizeFirst(signature))
 	url.RawQuery = q.Encode()
 
-	for _, item := range items {
-		jsonBytes, _ := json.Marshal(item)
-
-		req, err := http.NewRequest("POST", url.String(), bytes.NewBuffer(jsonBytes))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		resp, _ := PerformRequest(req, client)
-
-		Verbose("%v sent (%v)", item.FileName, resp.Status)
-		if del {
-			err := os.Remove(item.FilePath)
-			if err != nil {
-				log.Fatalf("Error deleting %v: %v", item.FileName, err)
-			}
-			Verbose("%v deleted (--delete)", item.FileName)
-		}
+	if err := sendItems(items, client, url.String(), del); err != nil {
+		log.Fatal(err)
 	}
 }
 
-func build(args []string) []models.SendItem {
-
+func buildItems(args []string) ([]models.SendItem, error) {
 	var items []models.SendItem
 	for _, arg := range args {
 		files, err := filepath.Glob(arg)
 		if err != nil {
-			log.Fatalf("Error parsing the file names: %v", err)
+			return nil, fmt.Errorf("error parsing the file names: %v", err)
 		}
 
 		for _, file := range files {
 			content, err := os.ReadFile(file)
 			if err != nil {
-				log.Fatal(err)
+				return nil, err
 			}
 			item := models.SendItem{FilePath: file, FileName: filepath.Base(file), Payload: base64.StdEncoding.EncodeToString(content)}
 			Verbose("%v selected and encoded (base64)", item.FileName)
 			items = append(items, item)
 		}
+	}
+	return items, nil
+}
+
+func build(args []string) []models.SendItem {
+	items, err := buildItems(args)
+	if err != nil {
+		log.Fatal(err)
 	}
 	return items
 }

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -56,13 +57,13 @@ func BasicAuth() string {
 	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
-func PerformRequest(req *http.Request, client *http.Client) (*http.Response, []byte) {
+func performRequest(req *http.Request, client *http.Client) (*http.Response, []byte, error) {
 	req.Header.Set("Authorization", "Basic "+BasicAuth())
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, err
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
@@ -70,18 +71,29 @@ func PerformRequest(req *http.Request, client *http.Client) (*http.Response, []b
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, err
 	}
 
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		log.Printf("Send failed (%v)", resp.Status)
-		if len(respBody) > 0 {
-			log.Println(string(respBody))
-		}
-		os.Exit(1)
+		return resp, respBody, fmt.Errorf("request failed (%v): %s", resp.Status, string(respBody))
 	}
 
-	return resp, respBody
+	return resp, respBody, nil
+}
+
+func PerformRequest(req *http.Request, client *http.Client) (*http.Response, []byte) {
+	resp, body, err := performRequest(req, client)
+	if err != nil {
+		if resp != nil {
+			log.Printf("Send failed (%v)", resp.Status)
+			if len(body) > 0 {
+				log.Println(string(body))
+			}
+			os.Exit(1)
+		}
+		log.Fatal(err)
+	}
+	return resp, body
 }
 
 func init() {
@@ -101,16 +113,16 @@ func init() {
 
 }
 
-func ToFile(filename string, payload string, encoding string) {
+func toFile(filename, payload, encoding, destDir string) error {
 	Verbose("Processing payload for %v with encoding %v\n", filename, encoding)
 	var decodedData []byte
-	
+
 	if encoding == "Base64" {
 		Verbose("Decoding base64 payload for %v\n", filename)
 		var err error
 		decodedData, err = base64.StdEncoding.DecodeString(payload)
 		if err != nil {
-			log.Fatalf("Error decoding base64 payload for %v: %v", filename, err)
+			return fmt.Errorf("error decoding base64 payload for %v: %v", filename, err)
 		}
 	} else {
 		Verbose("Using payload as plain string for %v\n", filename)
@@ -118,16 +130,15 @@ func ToFile(filename string, payload string, encoding string) {
 	}
 
 	var filePath string
-	var err error
-	if outputDir != "" {
-		filePath, err = getFullFilePath(outputDir, filename)
+	if destDir != "" {
+		var err error
+		filePath, err = getFullFilePath(destDir, filename)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-
-		err = createDirectoryIfNotExists(outputDir)
+		err = createDirectoryIfNotExists(destDir)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	} else {
 		filePath = filename
@@ -136,7 +147,7 @@ func ToFile(filename string, payload string, encoding string) {
 	Verbose("Creating file %v\n", filename)
 	file, err := os.Create(filePath)
 	if err != nil {
-		log.Fatalf("Error creating "+filename+": %v", err)
+		return fmt.Errorf("error creating %s: %v", filename, err)
 	}
 	defer func(file *os.File) {
 		_ = file.Close()
@@ -145,10 +156,17 @@ func ToFile(filename string, payload string, encoding string) {
 	Verbose("Writing to file %v\n", filename)
 	_, err = file.Write(decodedData)
 	if err != nil {
-		log.Fatalf("Error writing to file "+filename+": %v", err)
+		return fmt.Errorf("error writing to file %s: %v", filename, err)
 	}
 
 	Verbose("Write to %v succeeded\n", filename)
+	return nil
+}
+
+func ToFile(filename, payload, encoding string) {
+	if err := toFile(filename, payload, encoding, outputDir); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func createDirectoryIfNotExists(dest string) error {

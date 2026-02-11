@@ -78,14 +78,20 @@ func receiveRun(_ *cobra.Command, _ []string) {
 	}
 
 }
-func Delete(id int) {
+func deleteItem(id int, client *http.Client) error {
 	url := BuildEndpointUrl("receive", strconv.Itoa(id))
 	req, err := http.NewRequest("DELETE", url.String(), nil)
 	if err != nil {
+		return err
+	}
+	_, _, err = performRequest(req, client)
+	return err
+}
+
+func Delete(id int) {
+	if err := deleteItem(id, &http.Client{}); err != nil {
 		log.Fatal(err)
 	}
-
-	PerformRequest(req, &http.Client{})
 }
 
 func getFullFilePath(dest, filename string) (string, error) {
