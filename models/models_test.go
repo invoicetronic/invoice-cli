@@ -18,13 +18,45 @@ func TestSendItemJSONRoundTrip(t *testing.T) {
 		t.Fatalf("Marshal failed: %v", err)
 	}
 
+	// FilePath is tagged json:"-" because it is a local-only field
+	// that must not be sent to the API.
+	want := item
+	want.FilePath = ""
+
 	var got SendItem
 	if err := json.Unmarshal(data, &got); err != nil {
 		t.Fatalf("Unmarshal failed: %v", err)
 	}
 
-	if got != item {
-		t.Errorf("round-trip mismatch: got %+v, want %+v", got, item)
+	if got != want {
+		t.Errorf("round-trip mismatch: got %+v, want %+v", got, want)
+	}
+}
+
+func TestSendItemJSONTags(t *testing.T) {
+	item := SendItem{
+		Payload:  "dGVzdA==",
+		FileName: "test.xml",
+		FilePath: "/tmp/test.xml",
+	}
+
+	data, err := json.Marshal(item)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+	s := string(data)
+
+	// The API uses snake_case property naming, so payload and file_name
+	// must be emitted in snake_case. FilePath is local-only and must not
+	// appear in the payload.
+	if !strings.Contains(s, `"payload":"dGVzdA=="`) {
+		t.Errorf("marshaled JSON should contain snake_case \"payload\": %s", s)
+	}
+	if !strings.Contains(s, `"file_name":"test.xml"`) {
+		t.Errorf("marshaled JSON should contain snake_case \"file_name\": %s", s)
+	}
+	if strings.Contains(s, "FilePath") || strings.Contains(s, "file_path") {
+		t.Errorf("marshaled JSON must not leak FilePath: %s", s)
 	}
 }
 

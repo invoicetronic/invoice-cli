@@ -2,6 +2,8 @@
 
 ## In Development
 
+- fix: `send` now correctly preserves the original file name. `SendItem` marshals `payload` and `file_name` in snake_case (matching the API naming policy) and excludes the local-only `FilePath`. Previously the API, receiving an unrecognized `FileName` field, silently auto-generated a file name and rewrote the XML `DatiTrasmissione` block.
+
 ## [1.0.0] - 2026-02-11
 
 - fix: `get --json` was also writing the file to disk instead of only outputting JSON.
