@@ -2,6 +2,7 @@
 
 ## In Development
 
+- new: send a `User-Agent: Invoicetronic-CLI/<version>` header on every request. The API logs it per event (filterable via `user_agent` on `GET /log/`), aligned with the SDK convention `Invoicetronic-{Lang}-SDK/{version}`.
 - fix: `send` now correctly preserves the original file name. `SendItem` marshals `payload` and `file_name` in snake_case (matching the API naming policy) and excludes the local-only `FilePath`. Previously the API, receiving an unrecognized `FileName` field, silently auto-generated a file name and rewrote the XML `DatiTrasmissione` block.
 
 ## [1.0.0] - 2026-02-11

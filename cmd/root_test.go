@@ -160,6 +160,10 @@ func TestPerformRequest_Success(t *testing.T) {
 		if ct != "application/json" {
 			t.Errorf("Content-Type = %q, want application/json", ct)
 		}
+		ua := r.Header.Get("User-Agent")
+		if ua != userAgent {
+			t.Errorf("User-Agent = %q, want %q", ua, userAgent)
+		}
 		w.WriteHeader(200)
 		_, _ = w.Write([]byte(`{"ok":true}`))
 	})

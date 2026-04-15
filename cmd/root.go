@@ -20,6 +20,7 @@ const version = "1.0.0"
 const productName string = "Invoicetronic API"
 const defaultHost string = "https://api.invoicetronic.com"
 const apiVersion int = 1
+const userAgent string = "Invoicetronic-CLI/" + version
 
 var cfgFile string
 var apiKey string
@@ -60,6 +61,7 @@ func BasicAuth() string {
 func performRequest(req *http.Request, client *http.Client) (*http.Response, []byte, error) {
 	req.Header.Set("Authorization", "Basic "+BasicAuth())
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", userAgent)
 
 	resp, err := client.Do(req)
 	if err != nil {
