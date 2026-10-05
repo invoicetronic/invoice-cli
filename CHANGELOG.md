@@ -2,6 +2,8 @@
 
 ## In Development
 
+- chore: release binaries are built with `CGO_ENABLED=0`, so the Linux builds are statically linked and no longer depend on the glibc of the build machine. The release workflow no longer needs to pin an old Ubuntu runner (`ubuntu-22.04`, soon retired by GitHub) and runs on `ubuntu-latest`.
+
 ## [1.1.0] - 2026-04-15
 
 - new: send a `User-Agent: Invoicetronic-CLI/<version>` header on every request. The API logs it per event (filterable via `user_agent` on `GET /log/`), aligned with the SDK convention `Invoicetronic-{Lang}-SDK/{version}`.

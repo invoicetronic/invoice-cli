@@ -1,5 +1,9 @@
 .PHONY: all clean
 
+# Static binaries: with cgo on, the native linux build links the build host's glibc and
+# refuses to start on older distributions.
+export CGO_ENABLED := 0
+
 all: windows linux macos 
 
 windows: check-env

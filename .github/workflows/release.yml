@@ -12,7 +12,7 @@ jobs:
   release:
     needs: test
     name: Create GitHub Release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
 
